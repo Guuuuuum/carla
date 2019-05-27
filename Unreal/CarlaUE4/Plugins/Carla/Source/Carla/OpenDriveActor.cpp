@@ -143,6 +143,7 @@ void AOpenDriveActor::BeginPlay()
 		EFileWrite::FILEWRITE_Append
 	);
 	*/
+	
 }
 
 void AOpenDriveActor::ExportNavData()
@@ -152,18 +153,15 @@ void AOpenDriveActor::ExportNavData()
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	IFileManager* Filemanager = &IFileManager::Get();
-	//auto Ar = TUniquePtr<FArchive>(PlatformFile->CreateFileWriter(FileName, 0));
 
-	size_t routeUid = 0;
+	size_t laneUID = 0;
 	for (auto &route : RoutePlanners)
 	{
-		FRoutePlannerData planners;
-		planners.uid = routeUid;
-		size_t splineUid = 0;
+		FString debugName_0 = route->GetName();
 
 		for (auto &spline : route->Routes)
 		{
-			FSplineCompData splineData;
+			FString debugName_1 = spline->GetName();
 
 			auto tfType = ESplineCoordinateSpace::World;
 			size_t pointNum = spline->GetNumberOfSplinePoints();
@@ -172,20 +170,14 @@ void AOpenDriveActor::ExportNavData()
 				FVector pos = spline->GetLocationAtSplinePoint(i, tfType);
 				FVector tangentDir = spline->GetTangentAtSplinePoint(i, tfType);
 
-				splineData.splinePoints.Add(pos);
-				splineData.splineTangents.Add(tangentDir);
-
-				TextToSave = FString::Printf(TEXT("%d,%d,%d,%s,%s,%s,%s,%s,%s\n"), routeUid, splineUid, i,
+				TextToSave = FString::Printf(TEXT("%d,%d,%s,%s,%s,%s,%s,%s\n"), laneUID, i,
 					*FString::SanitizeFloat(pos.X * 0.01),
 					*FString::SanitizeFloat(pos.Y * 0.01),
 					*FString::SanitizeFloat(pos.Z * 0.01),
 					*FString::SanitizeFloat(tangentDir.X),
 					*FString::SanitizeFloat(tangentDir.Y),
 					*FString::SanitizeFloat(tangentDir.Z)
-					//*tangentDir.ToString()
 				);
-
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *TextToSave);
 
 				FFileHelper::SaveStringToFile(TextToSave,
 					*AbsoluteFilePath,
@@ -195,15 +187,10 @@ void AOpenDriveActor::ExportNavData()
 				);
 			}
 
-			splineData.uid = splineUid;
-			planners.splineComp.Add(splineData);
-			splineUid++;
+			laneUID++;
+			UE_LOG(LogTemp, Warning, TEXT("name : %s, route : %d, spline : %d"), *route->GetName(), laneUID);
 		}
-
-		NaM.routePlanners.Add(planners);
-		routeUid++;
 	}
-
 }
 
 void AOpenDriveActor::BuildRoutes()
@@ -308,7 +295,7 @@ void AOpenDriveActor::BuildRoutes(FString MapName)
         if (RoutePlanner != nullptr)
         {
           RoutePlanner->AddRoute(1.f, Positions);
-          RoutePlanners.Add(RoutePlanner);
+          RoutePlanners.AddUnique(RoutePlanner); // 중복 포인트 제거
         }
       }
     }

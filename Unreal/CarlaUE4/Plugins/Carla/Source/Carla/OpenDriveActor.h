@@ -91,8 +91,8 @@ private:
   bool bGenerateRoutes = false;
 #endif // WITH_EDITORONLY_DATA
 
-  UPROPERTY(Category = "Generate", EditAnywhere)
-	  FTrafficNavData NaM;
+  // UPROPERTY(Category = "Generate", EditAnywhere)
+  // FTrafficNavData NaM;
 
   /// Distance between waypoints where the cars will drive
   UPROPERTY(Category = "Generate", EditAnywhere, meta = (ClampMin = "0.01", UIMin = "0.01"))
