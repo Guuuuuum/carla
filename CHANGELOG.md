@@ -25,6 +25,7 @@
   * Several optimizations to the RPC server, now supports a bigger load of async messages
   * Register user props in fbx format, make them available in Carla Blueprint Library and spawnable.
   * Exposed 'is_invincible' for pedestrians
+  * Exposed waypoints and OpenDrive map to UE4 Blueprints
   * Fixed XODR files can be found now anywhere in content
   * Fixed bug related with Pygame error of surface too large, added sidewalks and improved lane markings in `no_rendering_mode.py`
 
