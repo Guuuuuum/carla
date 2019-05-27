@@ -13,10 +13,51 @@
 
 #include "Components/BillboardComponent.h"
 #include "Components/SceneComponent.h"
+#include "Engine/DataTable.h"
+
 #include "CoreMinimal.h"
 
 
 #include "OpenDriveActor.generated.h"
+
+USTRUCT(Blueprintable)
+struct FSplineCompData : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+	unsigned int uid = 0u;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FVector> splinePoints;
+	UPROPERTY(EditAnywhere)
+	TArray<FVector> splineTangents;
+};
+
+
+USTRUCT(Blueprintable)
+struct FRoutePlannerData : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+		unsigned int uid = 0u;
+	UPROPERTY(EditAnywhere)
+		TArray<FSplineCompData> splineComp;
+};
+
+
+USTRUCT(Blueprintable)
+struct FTrafficNavData : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(EditAnywhere)
+		TArray<FRoutePlannerData> routePlanners;
+
+};
+
 
 UCLASS()
 class CARLA_API AOpenDriveActor : public AActor
@@ -45,6 +86,9 @@ private:
   UPROPERTY(Category = "Generate", EditAnywhere)
   bool bGenerateRoutes = false;
 #endif // WITH_EDITORONLY_DATA
+
+  UPROPERTY(Category = "Generate", EditAnywhere)
+	  FTrafficNavData NaM;
 
   /// Distance between waypoints where the cars will drive
   UPROPERTY(Category = "Generate", EditAnywhere, meta = (ClampMin = "0.01", UIMin = "0.01"))
@@ -89,6 +133,8 @@ private:
 public:
 
   AOpenDriveActor(const FObjectInitializer &ObjectInitializer);
+
+  void ExportNavData();
 
   void BuildRoutes();
 

@@ -4,6 +4,9 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
+#include <iostream>
+#include <fstream>
+
 #include "Carla.h"
 #include "Carla/OpenDriveActor.h"
 
@@ -125,9 +128,57 @@ void AOpenDriveActor::PostEditChangeProperty(struct FPropertyChangedEvent &Event
 }
 #endif // WITH_EDITOR
 
+void AOpenDriveActor::ExportNavData()
+{
+	if (RoutePlanners.Num() < 1)
+		return;
+
+	std::ofstream file("routes.csv");
+
+	// FTrafficNavData navData;
+	size_t routeUid = 0;
+	for (auto &route : RoutePlanners)
+	{
+		FRoutePlannerData planners;
+		planners.uid = routeUid;
+
+		for (auto &spline : route->Routes)
+		{
+			FSplineCompData splineData;
+			size_t splineUid = 0;
+
+			auto tfType = ESplineCoordinateSpace::World;
+			size_t pointNum = spline->GetNumberOfSplinePoints();
+			for (size_t i = 0; i < pointNum; i++)
+			{
+				FVector pos = spline->GetLocationAtSplinePoint(i, tfType);
+				FVector tangentDir = spline->GetTangentAtSplinePoint(i, tfType);
+
+				splineData.splinePoints.Add(pos);
+				splineData.splineTangents.Add(tangentDir);
+				
+
+				FString fstrPos = pos.ToString() + "," + tangentDir.ToString();
+				std::string strPos = std::string(TCHAR_TO_UTF8(*fstrPos));
+				file << planners.uid << "," << splineData.uid << "," << i << "," << strPos << std::endl;
+			}
+
+			splineData.uid = splineUid;
+			planners.splineComp.Add(splineData);
+			splineUid++;
+		}
+
+		NaM.routePlanners.Add(planners);
+		routeUid++;
+	}
+
+	file.close();
+}
+
 void AOpenDriveActor::BuildRoutes()
 {
   BuildRoutes(GetWorld()->GetMapName());
+  ExportNavData();
 }
 
 void AOpenDriveActor::BuildRoutes(FString MapName)
