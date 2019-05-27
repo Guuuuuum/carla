@@ -74,6 +74,10 @@ protected:
 
 private:
 
+	FString SaveDirectory = FString("C:/Users/KETI/Documents/carla2/carla/Unreal/CarlaUE4");
+	FString FileName = FString("routes.csv");
+	FString TextToSave = FString("");
+	FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
   UPROPERTY()
   TArray<ARoutePlanner *> RoutePlanners;
 
@@ -157,4 +161,5 @@ public:
 
   void RemoveSpawners();
 
+  void BeginPlay();
 };

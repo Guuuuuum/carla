@@ -4,9 +4,6 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include <iostream>
-#include <fstream>
-
 #include "Carla.h"
 #include "Carla/OpenDriveActor.h"
 
@@ -21,6 +18,13 @@
 
 #include <algorithm>
 #include <unordered_set>
+
+#include <Runtime/Core/Public/Misc/FileHelper.h>
+#include <Runtime/Core/Public/HAL/PlatformFilemanager.h>
+#include <Runtime/Core/Public/GenericPlatform/GenericPlatformFile.h>
+#include <Runtime/Core/Public/HAL/FileManagerGeneric.h>
+
+#include <UnrealString.h>
 
 AOpenDriveActor::AOpenDriveActor(const FObjectInitializer &ObjectInitializer)
   : Super(ObjectInitializer)
@@ -128,24 +132,38 @@ void AOpenDriveActor::PostEditChangeProperty(struct FPropertyChangedEvent &Event
 }
 #endif // WITH_EDITOR
 
+void AOpenDriveActor::BeginPlay()
+{
+	/*
+	FString text = "Asdf";
+	FFileHelper::SaveStringToFile(text,
+		*AbsoluteFilePath,
+		FFileHelper::EEncodingOptions::AutoDetect,
+		&IFileManager::Get(),
+		EFileWrite::FILEWRITE_Append
+	);
+	*/
+}
+
 void AOpenDriveActor::ExportNavData()
 {
 	if (RoutePlanners.Num() < 1)
 		return;
 
-	std::ofstream file("routes.csv");
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	IFileManager* Filemanager = &IFileManager::Get();
+	//auto Ar = TUniquePtr<FArchive>(PlatformFile->CreateFileWriter(FileName, 0));
 
-	// FTrafficNavData navData;
 	size_t routeUid = 0;
 	for (auto &route : RoutePlanners)
 	{
 		FRoutePlannerData planners;
 		planners.uid = routeUid;
+		size_t splineUid = 0;
 
 		for (auto &spline : route->Routes)
 		{
 			FSplineCompData splineData;
-			size_t splineUid = 0;
 
 			auto tfType = ESplineCoordinateSpace::World;
 			size_t pointNum = spline->GetNumberOfSplinePoints();
@@ -156,11 +174,25 @@ void AOpenDriveActor::ExportNavData()
 
 				splineData.splinePoints.Add(pos);
 				splineData.splineTangents.Add(tangentDir);
-				
 
-				FString fstrPos = pos.ToString() + "," + tangentDir.ToString();
-				std::string strPos = std::string(TCHAR_TO_UTF8(*fstrPos));
-				file << planners.uid << "," << splineData.uid << "," << i << "," << strPos << std::endl;
+				TextToSave = FString::Printf(TEXT("%d,%d,%d,%s,%s,%s,%s,%s,%s\n"), routeUid, splineUid, i,
+					*FString::SanitizeFloat(pos.X * 0.01),
+					*FString::SanitizeFloat(pos.Y * 0.01),
+					*FString::SanitizeFloat(pos.Z * 0.01),
+					*FString::SanitizeFloat(tangentDir.X),
+					*FString::SanitizeFloat(tangentDir.Y),
+					*FString::SanitizeFloat(tangentDir.Z)
+					//*tangentDir.ToString()
+				);
+
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *TextToSave);
+
+				FFileHelper::SaveStringToFile(TextToSave,
+					*AbsoluteFilePath,
+					FFileHelper::EEncodingOptions::AutoDetect,
+					Filemanager,
+					EFileWrite::FILEWRITE_Append
+				);
 			}
 
 			splineData.uid = splineUid;
@@ -172,7 +204,6 @@ void AOpenDriveActor::ExportNavData()
 		routeUid++;
 	}
 
-	file.close();
 }
 
 void AOpenDriveActor::BuildRoutes()
