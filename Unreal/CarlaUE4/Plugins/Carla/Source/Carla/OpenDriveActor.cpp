@@ -134,16 +134,6 @@ void AOpenDriveActor::PostEditChangeProperty(struct FPropertyChangedEvent &Event
 
 void AOpenDriveActor::BeginPlay()
 {
-	/*
-	FString text = "Asdf";
-	FFileHelper::SaveStringToFile(text,
-		*AbsoluteFilePath,
-		FFileHelper::EEncodingOptions::AutoDetect,
-		&IFileManager::Get(),
-		EFileWrite::FILEWRITE_Append
-	);
-	*/
-	
 }
 
 void AOpenDriveActor::ExportNavData()
@@ -152,18 +142,19 @@ void AOpenDriveActor::ExportNavData()
 		return;
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	IFileManager* Filemanager = &IFileManager::Get();
+	FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
 
+	// make new one or make it blank
+	FFileHelper::SaveStringToFile("", *AbsoluteFilePath);
+
+	IFileManager* Filemanager = &IFileManager::Get();
 	size_t laneUID = 0;
+	auto tfType = ESplineCoordinateSpace::World;
+
 	for (auto &route : RoutePlanners)
 	{
-		FString debugName_0 = route->GetName();
-
 		for (auto &spline : route->Routes)
 		{
-			FString debugName_1 = spline->GetName();
-
-			auto tfType = ESplineCoordinateSpace::World;
 			size_t pointNum = spline->GetNumberOfSplinePoints();
 			for (size_t i = 0; i < pointNum; i++)
 			{

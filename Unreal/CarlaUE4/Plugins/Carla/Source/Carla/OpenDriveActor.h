@@ -72,10 +72,13 @@ protected:
   /// Sprite for the Billboard Component
   UTexture2D *SpriteTexture;
 
-private:
+public:
 
+	UPROPERTY(Category = "Generate", EditAnywhere)
 	FString SaveDirectory = FString("C:/Users/KETI/Documents/carla2/carla/Unreal/CarlaUE4");
+	UPROPERTY(Category = "Generate", EditAnywhere)
 	FString FileName = FString("routes.csv");
+private:
 	FString TextToSave = FString("");
 	FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
   UPROPERTY()
