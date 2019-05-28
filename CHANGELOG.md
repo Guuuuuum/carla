@@ -6,6 +6,7 @@
     - Camera following in playback was not working if a new map was needed to load.
     - API function 'show_recorder_file_info' was showing the wrong parent id.
     - Script 'start_recording.py' now properly saves destruction of actors at stop.
+  * API extension: add attachment type "SpringArm" for cinematic cameras
   * API extension: waypoint's `junction_id` that returns de OpenDrive identifier of the current junction
   * API change: deprecated waypoint's `is_intersection`, now is `is_junction`
   * Removed deprecated code and content
@@ -22,6 +23,7 @@
   * Updated OpenDriveActor to use the new Waypoint API
   * Fixed wrong units in VehiclePhysicsControl's center of mass
   * Several optimizations to the RPC server, now supports a bigger load of async messages
+  * Register user props in fbx format, make them available in Carla Blueprint Library and spawnable.
   * Exposed 'is_invincible' for pedestrians
   * Fixed bug related with Pygame error of surface too large, added sidewalks and improved lane markings in `no_rendering_mode.py`
 
